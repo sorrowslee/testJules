@@ -3,7 +3,7 @@ import { SlotPanel } from './SlotPanel'; // Ensure SlotPanel is imported
 import { UIButton } from './UIButton';   // Import UIButton
 
 export class Game {
-    public renderer: PIXI.Renderer | PIXI.CanvasRenderer; // Or PIXI.AbstractRenderer
+    public renderer: PIXI.Renderer; // Changed to specific WebGL Renderer type
     public stage: PIXI.Container;
     public ticker: PIXI.Ticker;
     private slotPanel: SlotPanel;
