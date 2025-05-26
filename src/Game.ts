@@ -29,10 +29,29 @@ export class Game {
             antialias: true,
         };
         this.renderer = await PIXI.autoDetectRenderer(rendererOptions);
-        (document.body.appendChild(this.renderer.view as unknown as Node)); // PixiJS v8 expects HTMLCanvasElement
+
+        console.log('Renderer object after autoDetectRenderer:', this.renderer);
+        if (this.renderer) {
+            console.log('Renderer view property:', this.renderer.view);
+            console.log('Is renderer.view an HTMLCanvasElement?:', this.renderer.view instanceof HTMLCanvasElement);
+        } else {
+            console.log('Renderer object is null or undefined after autoDetectRenderer!');
+        }
+
+        if (this.renderer && this.renderer.view instanceof HTMLCanvasElement) {
+            document.body.appendChild(this.renderer.view);
+            console.log('Successfully appended renderer.view to document.body');
+        } else {
+            console.error('ERROR: Cannot append renderer.view to document.body. View is invalid, not an HTMLCanvasElement, or renderer is not initialized.');
+            // Optional: throw an error here to halt further execution if this is critical
+            // throw new Error('Renderer view initialization failed.');
+        }
         
         // For PixiJS v8, background color is set on the renderer's background system
-        this.renderer.background.color = 0x1099bb;
+        // Ensure renderer is valid before accessing its properties
+        if (this.renderer) {
+            this.renderer.background.color = 0x1099bb;
+        }
 
         this.stage = new PIXI.Container();
         // In PixiJS v8, PIXI.Ticker.shared is often used, or a new one can be created.
