@@ -83,7 +83,7 @@ export class Game {
             align: 'center', 
             stroke: 0x000000, // Black stroke
             strokeThickness: 2 
-        } as PIXI.TextStyle; // Workaround for @types/pixi.js v5 mismatch with PixiJS v4.x code
+        } as any; // Workaround for @types/pixi.js v5 mismatch with PixiJS v4.x code
         
         this.winMessageText = new PIXI.Text('', winMessageStyle); // Initially empty
         // Position below the spin button or centrally
@@ -176,6 +176,6 @@ export class Game {
         // Type assertion as a workaround for @types/pixi.js v5 mismatch with PixiJS v4.x ticker behavior.
         // PixiJS v4 ticker's `add` method expects a callback like (delta: number) => void.
         // The v5 types might expect a TickerCallback compatible with (ticker: PIXI.Ticker) => void.
-        this.app.ticker.add(this.gameLoop.bind(this) as (delta: number) => void);
+        this.app.ticker.add(this.gameLoop.bind(this) as any); // Workaround for @types/pixi.js v5 mismatch with PixiJS v4.x code
     }
 }

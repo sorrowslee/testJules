@@ -86,7 +86,9 @@ export class SlotPanel {
 
     // Public getters for container properties
     public getPanelBounds(): PIXI.Rectangle {
-        return this.container.getBounds();
+        // Workaround for @types/pixi.js v5 (getBounds returns PIXI.Bounds) vs PixiJS v4.x (returns PIXI.Rectangle).
+        // getBounds(true) for global coordinates, cast to Rectangle.
+        return this.container.getBounds(true) as PIXI.Rectangle;
     }
 
     public getPanelPosition(): { x: number; y: number } {
