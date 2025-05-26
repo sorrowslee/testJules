@@ -54,6 +54,18 @@ export class Game {
         }
 
         this.stage = new PIXI.Container();
+
+        console.log('Attempting to create a test PIXI.Container...');
+        try {
+            const testContainer = new PIXI.Container();
+            console.log('Test PIXI.Container created successfully:', testContainer);
+            if (testContainer) {
+                console.log('testContainer.x (initial):', testContainer.x); // Check a property
+            }
+        } catch (e) {
+            console.error('Error creating test PIXI.Container directly:', e);
+        }
+
         // In PixiJS v8, PIXI.Ticker.shared is often used, or a new one can be created.
         // If creating a new one and it's not auto-started, ensure ticker.start() is called.
         this.ticker = PIXI.Ticker.shared; // Using shared ticker for v8
