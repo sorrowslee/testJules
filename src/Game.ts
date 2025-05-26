@@ -1,41 +1,51 @@
 import * as PIXI from 'pixi.js';
-import { SlotPanel } from './SlotPanel'; // Ensure SlotPanel is imported
-import { UIButton } from './UIButton';   // Import UIButton
+import { SlotPanel } from './SlotPanel';
+import { UIButton } from './UIButton';
 
 export class Game {
-    public renderer: PIXI.Renderer; // Changed to specific WebGL Renderer type
-    public stage: PIXI.Container;
-    public ticker: PIXI.Ticker;
-    private slotPanel: SlotPanel;
-    private spinButton: UIButton;
-    private balanceText: PIXI.Text;
-    private winMessageText: PIXI.Text;
-    private currentBalance: number = 100; // Initial balance
-    private readonly BET_AMOUNT: number = 10; // Define bet amount
-    private readonly PAYOUT_PER_WINNING_LINE: number = 50; // Define payout per line
+    public renderer!: PIXI.Renderer; // Definite assignment in initialize
+    public stage!: PIXI.Container;
+    public ticker!: PIXI.Ticker;
+    public slotPanel!: SlotPanel;
+    public spinButton!: UIButton;
+    public balanceText!: PIXI.Text;
+    public winMessageText!: PIXI.Text;
+    
+    public currentBalance: number = 100;
+    public readonly BET_AMOUNT: number = 10;
+    public readonly PAYOUT_PER_WINNING_LINE: number = 50;
 
     constructor() {
-        // Initialize Renderer, Stage, Ticker
+        console.log("Game constructor called");
+        // Non-PIXI members are initialized with their declaration.
+    }
+
+    public async initialize(): Promise<void> {
+        console.log("Game initializing...");
         const rendererOptions = {
             width: 800,
             height: 600,
             resolution: window.devicePixelRatio || 1,
-            antialias: true // Added for smoother graphics
+            antialias: true,
         };
-        this.renderer = PIXI.autoDetectRenderer(rendererOptions);
-        document.body.appendChild(this.renderer.view as unknown as Node);
-        this.renderer.backgroundColor = 0x1099bb; // Set background color
+        this.renderer = await PIXI.autoDetectRenderer(rendererOptions);
+        (document.body.appendChild(this.renderer.view as unknown as Node)); // PixiJS v8 expects HTMLCanvasElement
+        
+        // For PixiJS v8, background color is set on the renderer's background system
+        this.renderer.background.color = 0x1099bb;
 
         this.stage = new PIXI.Container();
-        this.ticker = new PIXI.Ticker();
+        // In PixiJS v8, PIXI.Ticker.shared is often used, or a new one can be created.
+        // If creating a new one and it's not auto-started, ensure ticker.start() is called.
+        this.ticker = PIXI.Ticker.shared; // Using shared ticker for v8
 
         // Diagnostic logs
         console.log('PIXI Renderer:', this.renderer);
         console.log('PIXI Stage:', this.stage);
-        if (this.renderer) {
+        if (this.renderer && this.renderer.view) {
             console.log('PIXI Renderer View:', this.renderer.view);
         } else {
-            console.log('PIXI Renderer is null or undefined!');
+            console.log('PIXI Renderer or Renderer View is null or undefined!');
         }
         console.log('Document body:', document.body);
 
@@ -60,30 +70,42 @@ export class Game {
         this.stage.addChild(this.spinButton);
 
         // Initialize and position Balance Text
-        this.balanceText = new PIXI.Text(`Balance: $${this.currentBalance}`, {
-            fontFamily: 'Arial', fontSize: 24, fill: 0xffffff, align: 'left'
+        // For PixiJS v8, PIXI.TextStyle is an interface, not a class. Direct object literal is fine.
+        this.balanceText = new PIXI.Text({
+            text: `Balance: $${this.currentBalance}`,
+            style: {
+                fontFamily: 'Arial', fontSize: 24, fill: 0xffffff, align: 'left'
+            }
         });
         this.balanceText.x = 20;
         this.balanceText.y = 20;
         this.stage.addChild(this.balanceText);
 
         // Initialize and position Win Message Text
-        const winMessageStyle = { 
-            fontFamily: 'Arial', 
-            fontSize: 20, 
-            fill: 0x00ff00, 
-            align: 'center', 
-            stroke: 0x000000,
-            strokeThickness: 2 
-        } as any; // Retain 'as any' due to ongoing type version mismatches
-        
-        this.winMessageText = new PIXI.Text('', winMessageStyle);
+        this.winMessageText = new PIXI.Text({
+            text: '',
+            style: {
+                fontFamily: 'Arial', 
+                fontSize: 20, 
+                fill: 0x00ff00, 
+                align: 'center', 
+                stroke: { color: 0x000000, width: 2 } // v8 stroke style
+            }
+        });
         this.winMessageText.anchor.set(0.5);
         this.winMessageText.x = this.renderer.screen.width / 2;
         this.winMessageText.y = this.spinButton.y + this.spinButton.height + 30;
         this.stage.addChild(this.winMessageText);
         
         this.updateBalanceDisplay();
+
+        // Add gameLoop to ticker
+        this.ticker.add(this.gameLoop, this); // Pass context if gameLoop uses 'this'
+        // If not using PIXI.Ticker.shared or if it's not auto-started:
+        if (!this.ticker.started) {
+            this.ticker.start();
+        }
+        console.log("Game initialization complete.");
     }
 
     private handleSpin(): void {
@@ -135,19 +157,27 @@ export class Game {
     }
 
     private updateBalanceDisplay(): void {
-        this.balanceText.text = `Balance: $${this.currentBalance}`;
+        if(this.balanceText) { // Check if balanceText is initialized
+            this.balanceText.text = `Balance: $${this.currentBalance}`;
+        }
     }
 
-    public gameLoop(delta: number): void { // delta is provided by PIXI.Ticker
+    public gameLoop(ticker: PIXI.Ticker | number): void { // PIXI.Ticker for v6+, number for delta in v4/v5
+        // For v8, delta is often ticker.deltaTime or ticker.deltaMS
+        // For simplicity and consistency with previous 'as any' for delta, let's assume delta comes from ticker
+        let delta: number;
+        if (typeof ticker === 'number') {
+            delta = ticker; // For v4/v5 style delta
+        } else {
+            delta = ticker.deltaTime; // For v6+ style ticker object
+        }
+
         if (this.slotPanel) {
             this.slotPanel.update(delta);
         }
-        this.renderer.render(this.stage); // Render the stage
-    }
-
-    public start(): void {
-        // Add gameLoop to ticker and start it
-        this.ticker.add(this.gameLoop.bind(this) as any); // Using 'as any' due to previous Ticker type issues
-        this.ticker.start();
+        // Ensure renderer and stage are available before rendering
+        if (this.renderer && this.stage) {
+            this.renderer.render(this.stage);
+        }
     }
 }

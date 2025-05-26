@@ -1,13 +1,13 @@
 import { Game } from './Game';
 
-window.addEventListener('DOMContentLoaded', () => {
-    // Create a new game instance
+window.addEventListener('DOMContentLoaded', async () => {
     const game = new Game();
-
-    // Start the game (if you have a start method in your Game class)
-    // For example, if Game class has a public start() method:
-    game.start();
-
-    // Optional: Log to confirm the game started
-    console.log('Game instance created and started.');
+    try {
+        await game.initialize();
+        console.log("Game initialized successfully.");
+        // The game.start() method was removed from Game.ts as its logic
+        // (starting the ticker) is now part of the initialize() method.
+    } catch (error) {
+        console.error("Error initializing game:", error);
+    }
 });
