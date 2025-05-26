@@ -19,8 +19,17 @@ export class Game {
             height: 600,
             backgroundColor: 0x1099bb, // Light blue background
             resolution: window.devicePixelRatio || 1,
-            autoDensity: true,
+            // autoDensity: true, // Removed for PixiJS v4.x compatibility
         });
+
+        console.log('PIXI App Object:', this.app);
+        if (this.app) {
+            console.log('PIXI App View:', this.app.view);
+            console.log('PIXI App Screen:', this.app.screen); // screen property might also be relevant
+        } else {
+            console.log('PIXI App Object is null or undefined!');
+        }
+        console.log('Document body:', document.body);
 
         // Append the PixiJS view to the HTML body
         document.body.appendChild(this.app.view as unknown as Node);
