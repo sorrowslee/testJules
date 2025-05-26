@@ -51,18 +51,16 @@ export class Game {
         this.spinButton = new UIButton('Spin', 150, 50, this.handleSpin.bind(this));
         
         // Position the button (example: below the slot panel)
-        // Ensure slotPanel.container is valid and has dimensions before calling getBounds
-        if (this.slotPanel.container) {
-            const panelBounds = this.slotPanel.container.getBounds(); // This provides global coordinates
+        // Ensure slotPanel is valid before trying to get its bounds
+        if (this.slotPanel) { // Check if slotPanel instance exists
+            const panelBounds = this.slotPanel.getPanelBounds(); // Use the new public getter
+            
             // To position relative to the stage center and below the panel:
             this.spinButton.x = this.app.screen.width / 2 - this.spinButton.width / 2;
-            this.spinButton.y = (this.app.screen.height + panelBounds.height) / 2 + 30; // Center panel, then button below
+            // Using panelBounds.height which is from getBounds()
+            this.spinButton.y = (this.app.screen.height + panelBounds.height) / 2 + 30; 
             
-            // A simpler positioning if panel is already centered by its own logic:
-            // this.spinButton.x = this.app.screen.width / 2 - this.spinButton.width / 2;
-            // this.spinButton.y = this.slotPanel.container.y + this.slotPanel.container.height + 30;
-
-        } else { // Fallback positioning if panel container is not ready (should not happen ideally)
+        } else { // Fallback positioning if slotPanel is not ready (should ideally not happen)
             this.spinButton.x = this.app.screen.width / 2 - this.spinButton.width / 2;
             this.spinButton.y = this.app.screen.height - 70; // 70px from bottom
         }
@@ -78,9 +76,16 @@ export class Game {
         this.app.stage.addChild(this.balanceText);
 
         // Initialize and position Win Message Text
-        this.winMessageText = new PIXI.Text('', { // Initially empty
-            fontFamily: 'Arial', fontSize: 20, fill: 0x00ff00, align: 'center', stroke: 0x000000, strokeThickness: 2
-        });
+        const winMessageStyle = { 
+            fontFamily: 'Arial', 
+            fontSize: 20, 
+            fill: 0x00ff00, 
+            align: 'center', 
+            stroke: 0x000000, // Black stroke
+            strokeThickness: 2 
+        } as PIXI.TextStyle; // Workaround for @types/pixi.js v5 mismatch with PixiJS v4.x code
+        
+        this.winMessageText = new PIXI.Text('', winMessageStyle); // Initially empty
         // Position below the spin button or centrally
         this.winMessageText.anchor.set(0.5);
         this.winMessageText.x = this.app.screen.width / 2;
@@ -168,6 +173,9 @@ export class Game {
 
     public start(): void {
         // Start the game loop
-        this.app.ticker.add(this.gameLoop.bind(this));
+        // Type assertion as a workaround for @types/pixi.js v5 mismatch with PixiJS v4.x ticker behavior.
+        // PixiJS v4 ticker's `add` method expects a callback like (delta: number) => void.
+        // The v5 types might expect a TickerCallback compatible with (ticker: PIXI.Ticker) => void.
+        this.app.ticker.add(this.gameLoop.bind(this) as (delta: number) => void);
     }
 }

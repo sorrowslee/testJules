@@ -84,6 +84,19 @@ export class SlotPanel {
         stage.addChild(this.container);
     }
 
+    // Public getters for container properties
+    public getPanelBounds(): PIXI.Rectangle {
+        return this.container.getBounds();
+    }
+
+    public getPanelPosition(): { x: number; y: number } {
+        return { x: this.container.x, y: this.container.y };
+    }
+
+    public getPanelDimensions(): { width: number; height: number } {
+        return { width: this.container.width, height: this.container.height };
+    }
+
     // Placeholder for future spin method
     public spin(): void {
         console.log('Spinning the slots!');

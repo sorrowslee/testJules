@@ -18,7 +18,8 @@ export class UIButton extends PIXI.Container {
 
         // Make the container interactive
         this.interactive = true;
-        this.buttonMode = true; // Show hand cursor on hover
+        // Workaround for @types/pixi.js v5 mismatch with PixiJS v4.x: buttonMode is on DisplayObject
+        (this as PIXI.DisplayObject).buttonMode = true; // Show hand cursor on hover
 
         // Create button graphics (rounded rectangle)
         this.buttonGraphics = new PIXI.Graphics();
@@ -89,7 +90,8 @@ export class UIButton extends PIXI.Container {
     public disable(): void {
         this._isDisabled = true;
         this.interactive = false;
-        this.buttonMode = false;
+        // Workaround for @types/pixi.js v5 mismatch with PixiJS v4.x: buttonMode is on DisplayObject
+        (this as PIXI.DisplayObject).buttonMode = false;
         this.setText("Spinning..."); // Or any text indicating it's busy
         this.drawButton(0xaaaaaa, 0x888888); // Greyed out
     }
@@ -97,7 +99,8 @@ export class UIButton extends PIXI.Container {
     public enable(): void {
         this._isDisabled = false;
         this.interactive = true;
-        this.buttonMode = true;
+        // Workaround for @types/pixi.js v5 mismatch with PixiJS v4.x: buttonMode is on DisplayObject
+        (this as PIXI.DisplayObject).buttonMode = true;
         this.setText(this.originalText);
         this.drawButton(0x007bff, 0x0056b3); // Back to normal state
     }
